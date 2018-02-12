@@ -55,10 +55,6 @@ class KeyboardContainer extends Component {
     return false
   }
 
-  componentDidUpdate() {
-    this.bindMousetrap()
-  }
-
   componentWillUnmount() {
     this.unbindMousetrap()
     Mousetrap.unbind(SHORTCUT_KEYS.TOGGLE_LAYOUT)
