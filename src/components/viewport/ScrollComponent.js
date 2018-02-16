@@ -93,9 +93,12 @@ function windowWasScrolled() {
   if (!ticking) {
     requestAnimationFrame(() => {
       scrolled()
-      ticking = false
+      ticking = true
     })
-    ticking = true
+
+    setTimeout(() => {
+      ticking = false
+    }, 40)
   }
 }
 
@@ -180,9 +183,12 @@ function targetWasScrolled(e) {
   if (!ticking) {
     requestAnimationFrame(() => {
       targetScrolled(e)
-      ticking = false
+      ticking = true
     })
-    ticking = true
+
+    setTimeout(() => {
+      ticking = false
+    }, 40)
   }
 }
 
