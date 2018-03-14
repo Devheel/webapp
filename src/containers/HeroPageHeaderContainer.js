@@ -14,6 +14,7 @@ import {
 } from '../selectors/gui'
 import { selectIsLoggedIn } from '../selectors/authentication'
 import { selectSubscribedCategoryIds } from '../selectors/profile'
+import { selectCategoryIsPromo } from '../selectors/categories'
 import { selectRandomPageHeader } from '../selectors/page_headers'
 import { trackPostViews } from '../actions/posts'
 import { followCategories } from '../actions/profile'
@@ -27,7 +28,22 @@ function mapStateToProps(state, props) {
   const categoryId = pageHeader ? pageHeader.get('categoryId') : null
   const subscribedIds = selectSubscribedCategoryIds(state, props)
   const isSubscribed = !!categoryId && !!isLoggedIn && subscribedIds.includes(categoryId)
-  return { pageHeader, user, dpi, isMobile, isLoggedIn, isSubscribed, subscribedIds, categoryId }
+  const isPromo = categoryId ? true : false
+  console.log(`categoryId: ${categoryId}`)
+  console.log(pageHeader)
+  cosnole.log(selectCategory({categoryId: categoryId}))
+  // console.log(`isPromo: ${pageHeader}`)
+  return {
+    pageHeader,
+    user,
+    dpi,
+    isMobile,
+    isLoggedIn,
+    isSubscribed,
+    isPromo,
+    subscribedIds,
+    categoryId,
+  }
 }
 
 class HeroPageHeaderContainer extends Component {
@@ -38,6 +54,7 @@ class HeroPageHeaderContainer extends Component {
     isMobile: PropTypes.bool.isRequired,
     isLoggedIn: PropTypes.bool.isRequired,
     isSubscribed: PropTypes.bool.isRequired,
+    isPromo: PropTypes.bool.isRequired,
     subscribedIds: PropTypes.object,
     categoryId: PropTypes.string,
     dispatch: PropTypes.func.isRequired,
@@ -81,7 +98,7 @@ class HeroPageHeaderContainer extends Component {
   }
 
   render() {
-    const { pageHeader, user, dpi, isMobile, isLoggedIn, isSubscribed } = this.props
+    const { pageHeader, user, dpi, isMobile, isLoggedIn, isSubscribed, isPromo } = this.props
     if (!pageHeader) { return null }
     switch (pageHeader.get('kind')) {
       case 'CATEGORY':
@@ -101,6 +118,7 @@ class HeroPageHeaderContainer extends Component {
             isMobile={isMobile}
             isLoggedIn={isLoggedIn}
             isSubscribed={isSubscribed}
+            isPromo={isPromo}
             subscribe={this.subscribe}
             unsubscribe={this.unsubscribe}
           />
