@@ -3,6 +3,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import BackgroundImage from '../assets/BackgroundImage'
 import {
+  BadgeFeaturedIcon,
   CategorySubscribedIcon,
   CategorySubscribeButton,
 } from '../categories/CategoryRenderables'
@@ -218,7 +219,7 @@ const promotionCategoryStyle = css(
 
 export const HeroPromotionCategory = (props) => {
   const { creditLabel, creditSources, creditUsername, creditTrackingLabel } = props
-  const { description, dpi, name, sources } = props
+  const { description, dpi, name, sources, isPromo } = props
   const { ctaCaption, ctaHref, ctaTrackingLabel, isLoggedIn, isMobile, isSubscribed } = props
   const { subscribe, unsubscribe } = props
 
@@ -234,6 +235,11 @@ export const HeroPromotionCategory = (props) => {
           </h1>
           <p className={categoryCopyStyle}>{description}</p>
           <span className={subscribeHolderStyle}>
+            {isPromo &&
+              <span className="featured-badge">
+                <BadgeFeaturedIcon />
+              </span>
+            }
             <CategorySubscribeButton
               subscribe={subscribe}
               unsubscribe={unsubscribe}
@@ -316,6 +322,7 @@ HeroPromotionCategory.propTypes = {
   subscribe: PropTypes.func.isRequired,
   unsubscribe: PropTypes.func.isRequired,
   isSubscribed: PropTypes.bool.isRequired,
+  isPromo: PropTypes.bool.isRequired,
 }
 HeroPromotionCategory.defaultProps = {
   creditSources: null,
