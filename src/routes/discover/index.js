@@ -1,47 +1,27 @@
 import DiscoverContainer from '../../containers/DiscoverContainer'
+import DiscoverAllContainer from '../../containers/DiscoverAllContainer'
 
-const getComponents = (location, cb) => {
-  cb(null, DiscoverContainer)
-}
-
-const explore = () => ({
-  path: 'explore(/:type)(/trending)',
-  getComponents,
-  onEnter(nextState, replace) {
-    const { params: { type } } = nextState
-    const rootPath = '/discover'
-
-    if (!type) {
-      replace({ state: nextState, pathname: rootPath })
-    } else {
-      replace({ state: nextState, pathname: `/discover/${type || 'featured'}` })
-    }
+const discoverAll = () => ({
+  path: 'discover/all',
+  getComponents(location, cb) {
+    cb(null, DiscoverAllContainer)
   },
 })
 
 const discover = () => ({
-  path: 'discover(/:type)(/trending)',
-  getComponents,
-  onEnter(nextState, replace) {
-    const type = nextState.params.type || 'featured'
-    const rootPath = '/discover'
-
-    // redirect back to root path if type is unrecognized
-    // or, if a logged out user is visiting /discover, redirect to /
-    if (!type) {
-      replace({ state: nextState, pathname: rootPath })
-    }
+  path: 'discover(/:stream)(/:kind)',
+  getComponents(location, cb) {
+    cb(null, DiscoverContainer)
   },
 })
 
 export {
-  getComponents,
+  discoverAll,
   discover,
-  explore,
 }
 
 export default [
+  discoverAll,
   discover,
-  explore,
 ]
 

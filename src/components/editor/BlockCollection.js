@@ -34,7 +34,8 @@ import { css, hover, media, parent, select } from '../../styles/jss'
 import * as s from '../../styles/jso'
 
 const editorWrapperStyle = css(
-  { maxWidth: 1440 },
+  s.mxAuto,
+  s.maxViewWidth,
   parent('.Omnibar',
     s.p10,
     s.mxAuto,

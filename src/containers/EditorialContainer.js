@@ -32,8 +32,9 @@ const makeMapStateToProps = () => (
   (state: any, props: EditorialProps) => {
     const editorial = selectEditorial(state, props)
     const postId = selectEditorialPostId(state, props)
+    const dpi = selectDPI(state)
     return {
-      dpi: selectDPI(state),
+      dpi,
       editorial,
       isLoggedIn: selectIsLoggedIn(state),
       isPostLoved: selectPostLoved(state, { postId }),

@@ -40,6 +40,7 @@ export const selectWebOnboardingVersion = state => state.profile.get('webOnboard
 export const selectProfileLinksCategories = state => state.profile.getIn(['links', 'categories'], Immutable.List())
 export const selectUuid = state => state.profile.get('uuid')
 export const selectSplit = (state, props) => state.profile.getIn(['splits', props.splitName])
+export const selectSubscribedCategoryIds = state => state.profile.get('followedCategoryIds', Immutable.List())
 
 // Memoized selectors
 export const selectIsAvatarBlank = createSelector(

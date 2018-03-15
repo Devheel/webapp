@@ -25,10 +25,6 @@ describe('api.js', () => {
   })
 
   context('onboarding', () => {
-    it('#awesomePeoplePath', () => {
-      expect(api.awesomePeoplePath().path).to.match(/\/discover\/users\/onboarding\?/)
-    })
-
     it('#communitiesPath', () => {
       expect(api.communitiesPath().path).to.match(/\/interest_categories\/members\?/)
     })

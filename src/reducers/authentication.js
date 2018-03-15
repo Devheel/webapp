@@ -16,6 +16,12 @@ export const initialState = Immutable.Map({
   isLoggedIn: false,
   refreshToken: null,
   tokenType: null,
+  publicToken: Immutable.Map({
+    accessToken: null,
+    expiresIn: null,
+    createdAt: null,
+    tokenType: null,
+  }),
 })
 
 export default (state = initialState, action) => {
@@ -23,6 +29,12 @@ export default (state = initialState, action) => {
   switch (action.type) {
     case AUTHENTICATION.CLEAR_AUTH_TOKEN:
       return state.delete('accessToken').delete('expirationDate').delete('expiresIn')
+    case AUTHENTICATION.PUBLIC_SUCCESS:
+      auth = action.payload.response.token
+      return state.set('publicToken', Immutable.Map({
+        ...auth,
+        expirationDate: new Date((auth.createdAt + auth.expiresIn) * 1000),
+      }))
     case AUTHENTICATION.LOGOUT_SUCCESS:
     case AUTHENTICATION.LOGOUT_FAILURE:
     case AUTHENTICATION.REFRESH_FAILURE:

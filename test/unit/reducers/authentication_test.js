@@ -36,6 +36,7 @@ describe('authentication reducer', () => {
         'isLoggedIn',
         'refreshToken',
         'tokenType',
+        'publicToken',
       )
     })
   })

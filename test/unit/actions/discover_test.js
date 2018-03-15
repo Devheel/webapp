@@ -3,83 +3,23 @@ import * as subject from '../../../src/actions/discover'
 import {
   postsAsGrid,
   postsAsList,
-  usersAsGrid,
 } from '../../../src/components/streams/StreamRenderables'
 
 describe('discover actions', () => {
-  context('#loadDiscoverPosts', () => {
-    const action = subject.loadDiscoverPosts('trending')
+  context('#loadGlobalPostStream', () => {
+    const action = subject.loadGlobalPostStream('trending')
 
     it('is an FSA compliant action', () => {
       expect(isFSA(action)).to.be.true
     })
 
     it('has a top level action.type', () => {
-      expect(isFSAName(action, subject.loadDiscoverPosts)).to.be.true
-    })
-
-    it('has the correct api endpoint in the action', () => {
-      expect(action.payload.endpoint.path).to.contain('/discover/posts/trending?per_page=25')
-    })
-
-    it('has the correct mapping type in the action', () => {
-      expect(action.meta.mappingType).to.equal('posts')
+      expect(action.type).to.equal('V3.LOAD_STREAM')
     })
 
     it('has asList, asGrid and asZero properties on renderStreams in the action', () => {
       expect(action.meta.renderStream.asList).to.equal(postsAsList)
       expect(action.meta.renderStream.asGrid).to.equal(postsAsGrid)
-    })
-  })
-
-  context('#loadCommunities', () => {
-    const action = subject.loadCommunities()
-
-    it('is an FSA compliant action', () => {
-      expect(isFSA(action)).to.be.true
-    })
-
-    it('has a top level action.type', () => {
-      expect(isFSAName(action, subject.loadCommunities)).to.be.true
-    })
-
-    it('has the correct api endpoint in the action', () => {
-      const testPath = '/interest_categories/members?name=onboarding&per_page=25'
-      expect(action.payload.endpoint.path).to.contain(testPath)
-    })
-
-    it('has the correct mapping type in the action', () => {
-      expect(action.meta.mappingType).to.equal('users')
-    })
-
-    it('has asList, asGrid and asZero properties on renderStreams in the action', () => {
-      expect(action.meta.renderStream.asList).to.equal(usersAsGrid)
-      expect(action.meta.renderStream.asGrid).to.equal(usersAsGrid)
-    })
-  })
-
-  context('#loadFeaturedUsers', () => {
-    const action = subject.loadFeaturedUsers()
-
-    it('is an FSA compliant action', () => {
-      expect(isFSA(action)).to.be.true
-    })
-
-    it('has a top level action.type', () => {
-      expect(isFSAName(action, subject.loadFeaturedUsers)).to.be.true
-    })
-
-    it('has the correct api endpoint in the action', () => {
-      expect(action.payload.endpoint.path).to.contain('/discover/users/onboarding?per_page=25')
-    })
-
-    it('has the correct mapping type in the action', () => {
-      expect(action.meta.mappingType).to.equal('users')
-    })
-
-    it('has asList, asGrid and asZero properties on renderStreams in the action', () => {
-      expect(action.meta.renderStream.asList).to.equal(usersAsGrid)
-      expect(action.meta.renderStream.asGrid).to.equal(usersAsGrid)
     })
   })
 

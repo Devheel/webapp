@@ -4,7 +4,7 @@ import { Link } from 'react-router'
 import Avatar from '../assets/Avatar'
 import { ChevronCircleIcon, ShareIcon } from '../assets/Icons'
 import { AppleStore, GooglePlayStore } from '../assets/Sprites'
-import { css, hover, media, parent } from '../../styles/jss'
+import { css, hover, media, parent, select } from '../../styles/jss'
 import * as s from '../../styles/jso'
 import * as ENV from '../../../env'
 
@@ -33,8 +33,8 @@ const creditsStyle = css(
   { transition: 'color 0.2s ease, opacity 0.2s ease' },
   hover(s.colorC),
   parent('.isCreditsHidden', s.pointerNone, s.opacity0),
+  parent('.ArtistInvites', { right: 20 }),
   parent('.AuthenticationFormDialog.inModal', { right: 20 }),
-  parent('.HeroHeader', { right: 20 }),
   media(s.minBreak2,
     { right: 20, bottom: 20 },
     parent('.HeroHeader', { right: 40 }),
@@ -42,17 +42,16 @@ const creditsStyle = css(
   ),
   media(s.minBreak4, { right: 40 }, parent('.HeroHeader', { right: 60 })),
   media(s.maxBreak2,
-    parent('.HeroPromotionMobileActions >', {
-      position: 'static',
-      width: '60%',
-      paddingLeft: 5,
-      overflow: 'hidden',
-      textAlign: 'right',
-      textOverflow: 'ellipsis',
+    s.flex,
+    s.justifyEnd,
+    s.itemsCenter,
+    s.fullWidth,
+    s.pl10,
+    {
       whiteSpace: 'nowrap',
-      alignSelf: 'flex-end',
-      verticalAlign: 'middle',
-    }),
+      maxWidth: '100%',
+    },
+    select('& .inHeroPromotionCredits', { flex: 'none' }),
   ),
 )
 
@@ -61,20 +60,35 @@ const creditsAuthorStyle = css(
   s.ml10,
   { marginRight: 15, lineHeight: 1.2, borderBottom: '1px solid' },
   media(s.maxBreak2,
-    parent('.HeroPromotionMobileActions > .HeroPromotionCredits', s.inline),
+    parent('.HeroPromotionCredits',
+      s.relative,
+      s.inlineBlock,
+      s.truncate,
+      { maxWidth: 'calc(100% - 60px)' },
+    ),
+    select('&.with-label',
+      parent('.HeroPromotionCredits',
+        { maxWidth: 'calc(100% - 136px)' },
+      ),
+    ),
   ),
 )
 
 const creditsByStyle = media(s.maxBreak2,
-  parent('.HeroPromotionMobileActions > .HeroPromotionCredits', s.inline),
+  parent('.HeroPromotionCredits', s.inlineBlock),
 )
 
-export const HeroPromotionCredits = ({ label, sources, username }, { onClickTrackCredits }) =>
-  (<Link className={`HeroPromotionCredits ${creditsStyle}`} onClick={onClickTrackCredits} to={`/${username}`}>
-    <span className={creditsByStyle}>{label}</span>
-    <span className={creditsAuthorStyle}>@{username}</span>
-    <Avatar className="inHeroPromotionCredits" sources={sources} username={username} />
-  </Link>)
+export const HeroPromotionCredits = ({ label, sources, username, trackingLabel }, context) => {
+  const { onClickTrackCredits } = context
+  const track = () => onClickTrackCredits(trackingLabel)
+  return (
+    <Link className={`HeroPromotionCredits ${creditsStyle}`} onClick={track} to={`/${username}`}>
+      {label && <span className={creditsByStyle}>{label}</span>}
+      <span className={`${creditsAuthorStyle}${label ? ' with-label' : ''}`}>@{username}</span>
+      <Avatar className="inHeroPromotionCredits" sources={sources} username={username} />
+    </Link>
+  )
+}
 
 HeroPromotionCredits.contextTypes = {
   onClickTrackCredits: PropTypes.func.isRequired,
@@ -84,6 +98,7 @@ HeroPromotionCredits.propTypes = {
   label: PropTypes.string,
   sources: PropTypes.object,
   username: PropTypes.string,
+  trackingLabel: PropTypes.string,
 }
 
 // -------------------------------------
@@ -101,18 +116,20 @@ const ctaStyle = css(
 
 const ctaTextStyle = css({ borderBottom: '1px solid' })
 
-export const HeroPromotionCTA = ({ caption, isLoggedIn, to }, { onClickTrackCTA }) => {
+export const HeroPromotionCTA = ({ caption, isLoggedIn, to, trackingLabel }, context) => {
+  const { onClickTrackCTA } = context
+  const track = () => onClickTrackCTA(trackingLabel)
   if (caption && to) {
     const re = new RegExp(ENV.AUTH_DOMAIN.replace('https://', ''))
     if (re.test(to)) {
       return (
-        <Link className={ctaStyle} onClick={onClickTrackCTA} to={to}>
+        <Link className={ctaStyle} onClick={track} to={to}>
           <span className={ctaTextStyle}>{caption}</span>
         </Link>
       )
     }
     return (
-      <a className={ctaStyle} href={to} onClick={onClickTrackCTA} rel="noopener noreferrer" target="_blank">
+      <a className={ctaStyle} href={to} onClick={track} rel="noopener noreferrer" target="_blank">
         <span className={ctaTextStyle}>{caption}</span>
       </a>
     )
@@ -128,6 +145,7 @@ HeroPromotionCTA.propTypes = {
   caption: PropTypes.string,
   isLoggedIn: PropTypes.bool,
   to: PropTypes.string,
+  trackingLabel: PropTypes.string,
 }
 
 // -------------------------------------

@@ -89,9 +89,12 @@ const titleStyle = css(
 const inviteTypeStyle = css(
   s.colorA,
   s.my0,
-  s.truncate,
   media(s.minBreak3, { width: 'calc(100% - 210px)', float: 'left' }),
   media(s.maxBreak3, s.mb10),
+  parent(
+    '.ArtistInvites',
+    s.truncate,
+  ),
   parent(
     '.ArtistInvitesDetail',
     s.fontSize24,

@@ -3,6 +3,7 @@ import analyticsSaga from './analytics'
 import authenticationSaga from './authentication'
 import pushSubscriptionSaga from './push_subscription'
 import requesterSaga from './requester'
+import v3RequesterSaga from './v3_requester'
 import uploaderSaga from './uploader'
 import { isElloAndroid } from '../lib/jello'
 
@@ -11,6 +12,7 @@ export default function* root() {
     fork(analyticsSaga),
     fork(authenticationSaga),
     fork(requesterSaga),
+    fork(v3RequesterSaga),
     fork(uploaderSaga),
   ])
   if (isElloAndroid()) {

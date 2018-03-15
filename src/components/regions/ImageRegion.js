@@ -64,8 +64,8 @@ const lightBoxImageStyle = css(
 
 // export to re-use this wonky image url parser
 export function getTempAssetId(url) {
-  if (url.includes('/ello-')) {
-    return url.split('uploads/')[1].split('/ello-')[1].split('.')[0].replace(/-/g, '_')
+  if (url.includes('uploads/')) {
+    return url.substring(url.lastIndexOf('/') + 1, url.lastIndexOf('.')).replace('ello-', '').replace(/-/g, '_')
   }
   return null
 }

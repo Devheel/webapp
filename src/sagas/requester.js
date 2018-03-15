@@ -18,6 +18,7 @@ export const requestTypes = [
   ACTION_TYPES.AUTHENTICATION.LOGOUT,
   ACTION_TYPES.AUTHENTICATION.REFRESH,
   ACTION_TYPES.AUTHENTICATION.USER,
+  ACTION_TYPES.AUTHENTICATION.PUBLIC,
   ACTION_TYPES.COMMENT.CREATE,
   ACTION_TYPES.COMMENT.DELETE,
   ACTION_TYPES.COMMENT.EDITABLE,
@@ -201,7 +202,8 @@ export function* performRequest(action) {
   const SUCCESS = `${type}_SUCCESS`
 
   let tokenJSON = null
-  if (action.type === ACTION_TYPES.AUTHENTICATION.REFRESH) {
+  if (action.type === ACTION_TYPES.AUTHENTICATION.REFRESH ||
+    action.type === ACTION_TYPES.AUTHENTICATION.PUBLIC) {
     // access token not needed for refreshing the existing token.
     // This shortcuts a request to get a public token.
     tokenJSON = { token: { access_token: null } }

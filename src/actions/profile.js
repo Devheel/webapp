@@ -17,11 +17,14 @@ export function autoCompleteLocation(location) {
   }
 }
 
-export function followCategories(catIds) {
+export function followCategories(catIds, disableFollows) {
   return {
     type: PROFILE.FOLLOW_CATEGORIES,
     payload: {
-      body: { followed_category_ids: catIds },
+      body: {
+        followed_category_ids: catIds,
+        disable_follows: !!disableFollows,
+      },
       endpoint: api.followCategories(),
       method: 'PUT',
     },

@@ -42,7 +42,7 @@ const navbarStyle = css(
   media(s.minBreak2,
     s.p20,
     { borderBottom: '1px solid #f2f2f2' },
-    select('.no-touch .isNavbarHidden ~ &:hover', s.bgcWhite, s.transformNone, { transitionDelay: '0s' }),
+    select('.no-touch .isNavbarHidden ~ &:hover', s.bgcWhite, s.transformNone, { transitionDelay: '350ms' }),
     select('.no-touch .isNavbarHidden ~ .Discover + &:hover', { transitionDelay: '1.5s' }),
     select('.no-touch .isNavbarHidden ~ &::after',
       s.absolute,
@@ -78,6 +78,7 @@ const linksStyle = css(
 
 export const NavbarLoggedOut = ({
   categoryTabs,
+  areCategoriesSubscribed,
   deviceSize,
   hasLoadMoreButton,
   onClickLoadMorePosts,
@@ -134,11 +135,20 @@ export const NavbarLoggedOut = ({
         to="/join"
       />
     </div>
-    {categoryTabs ? <CategoryTabBar pathname={pathname} tabs={categoryTabs} /> : null}
+    {categoryTabs &&
+      <CategoryTabBar
+        pathname={pathname}
+        tabs={categoryTabs}
+        areCategoriesSubscribed={areCategoriesSubscribed}
+        subscribed={false}
+        deviceSize={deviceSize}
+      />
+    }
   </nav>)
 
 NavbarLoggedOut.propTypes = {
   categoryTabs: PropTypes.array,
+  areCategoriesSubscribed: PropTypes.bool,
   deviceSize: PropTypes.string.isRequired,
   hasLoadMoreButton: PropTypes.bool.isRequired,
   onClickLoadMorePosts: PropTypes.func.isRequired,
@@ -147,6 +157,7 @@ NavbarLoggedOut.propTypes = {
 }
 NavbarLoggedOut.defaultProps = {
   categoryTabs: null,
+  areCategoriesSubscribed: false,
 }
 NavbarLoggedOut.contextTypes = {
   onClickArtistInvites: PropTypes.func.isRequired,
@@ -158,6 +169,7 @@ export const NavbarLoggedIn = ({
   artistInvitesInProfileMenu,
   avatar,
   categoryTabs,
+  areCategoriesSubscribed,
   deviceSize,
   hasLoadMoreButton,
   isBrand,
@@ -208,7 +220,7 @@ export const NavbarLoggedIn = ({
           icon={<SparklesIcon />}
           label="Discover"
           pathname={pathname}
-          to="/discover"
+          to="/discover/subscribed"
         />
         <NavbarLink
           className="LabelOnly"
@@ -259,13 +271,22 @@ export const NavbarLoggedIn = ({
         <NotificationsContainer isModal /> : null
       }
     </div>
-    {categoryTabs ? <CategoryTabBar pathname={pathname} tabs={categoryTabs} /> : null}
+    {categoryTabs &&
+      <CategoryTabBar
+        pathname={pathname}
+        tabs={categoryTabs}
+        areCategoriesSubscribed={areCategoriesSubscribed}
+        subscribed
+        deviceSize={deviceSize}
+      />
+    }
   </nav>)
 
 NavbarLoggedIn.propTypes = {
   artistInvitesInProfileMenu: PropTypes.bool.isRequired,
   avatar: PropTypes.object,
   categoryTabs: PropTypes.array,
+  areCategoriesSubscribed: PropTypes.bool,
   deviceSize: PropTypes.string.isRequired,
   hasLoadMoreButton: PropTypes.bool.isRequired,
   isBrand: PropTypes.bool.isRequired,
@@ -292,6 +313,7 @@ NavbarLoggedIn.propTypes = {
 NavbarLoggedIn.defaultProps = {
   avatar: null,
   categoryTabs: null,
+  areCategoriesSubscribed: false,
   isGridMode: false,
   username: null,
 }

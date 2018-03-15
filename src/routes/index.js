@@ -6,7 +6,7 @@ import authenticationRoutes from './authentication'
 import EditorialRoute, { getComponents as getEditorialComponents } from './editorial'
 import {
   discover as discoverRoute,
-  explore as exploreRoute,
+  discoverAll as discoverAllRoute,
 } from './discover'
 import SearchRoutes from './search'
 import StreamsRoutes from './streams'
@@ -70,8 +70,8 @@ const routes = (store) => {
         EditorialRoute,
         PostDetailRoute,
         ...authenticationRoutes(store),
+        discoverAllRoute(store),
         discoverRoute(store),
-        exploreRoute(store),
         createRedirect('starred', '/following'),
         ...StreamsRoutes.map(route => authenticate(route)),
         authenticate(NotificationsRoute),

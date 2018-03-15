@@ -25,6 +25,11 @@ const initialState = Immutable.Map({
   uuid: imageGuid(),
 })
 
+function updateFollowedCategoryIds(state, { payload: { body } }) {
+  const followedIds = body.followed_category_ids
+  return state.set('followedCategoryIds', followedIds)
+}
+
 export default (state = initialState, action) => {
   switch (action.type) {
     case PROFILE.AVAILABILITY_SUCCESS:
@@ -122,6 +127,8 @@ export default (state = initialState, action) => {
         .set('avatar', avatar)
         .set('coverImage', coverImage)
     }
+    case PROFILE.FOLLOW_CATEGORIES_SUCCESS:
+      return updateFollowedCategoryIds(state, action)
     case AUTHENTICATION.USER_SUCCESS:
     case AUTHENTICATION.REFRESH_SUCCESS:
     case PROFILE.SIGNUP_SUCCESS:

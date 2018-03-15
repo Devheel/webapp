@@ -17,6 +17,7 @@ export const selectPropsLocationKey = (state, props) => get(props, 'location.key
 export const selectPropsPathname = (state, props) => get(props, 'location.pathname')
 export const selectPropsQueryTerms = (state, props) => get(props, 'location.query.terms')
 export const selectPropsQueryType = (state, props) => get(props, 'location.query.type')
+export const selectPropsQueryBefore = (state, props) => get(props, 'location.query.before')
 
 // state.routing.xxx
 export const selectLocation = state => state.routing.get('location')
@@ -27,6 +28,18 @@ export const selectPathname = state => state.routing.getIn(['location', 'pathnam
 export const selectQueryTerms = state => state.routing.getIn(['location', 'terms'])
 export const selectQueryPreview = state => state.routing.getIn(['location', 'preview'])
 export const selectSubmissionType = state => state.routing.getIn(['location', 'submissionType'])
+
+// props.routing for discover streams
+export function selectDiscoverStream(state, { params: { stream } }) {
+  if (!stream || stream === 'recent' || stream === 'trending') { return 'global' }
+  return stream
+}
+export function selectDiscoverStreamKind(state, { params: { stream, kind } }) {
+  if (!kind && !stream) { return 'featured' }
+  if (stream === 'recent' || stream === 'trending') { return stream }
+  if (!kind) { return 'featured' }
+  return kind
+}
 
 // Memoized selectors
 export const selectViewNameFromRoute = createSelector(
@@ -40,7 +53,10 @@ export const selectViewNameFromRoute = createSelector(
     if (/^\/find\b|^\/search\b/.test(pathname)) {
       return 'search'
     }
-    if (/^\/discover\b|^\/explore\b/.test(pathname)) {
+    if (/^\/discover\/all\b/.test(pathname)) {
+      return 'discoverAll'
+    }
+    if (/^\/discover\b/.test(pathname)) {
       return 'discover'
     }
     if (/^\/invitations\b/.test(pathname)) {
@@ -81,6 +97,15 @@ export const selectIsPostDetail = createSelector(
   [selectViewNameFromRoute], viewName => viewName === 'postDetail',
 )
 
-export const selectIsDiscoverRoot = createSelector(
-  [selectPathname], pathname => /^\/(?:discover(\/featured|\/recommended)?)?$/.test(pathname),
+export const selectIsGlobalRoot = createSelector(
+  [selectPathname], pathname => /^\/(?:discover(\/featured|\/recommended|\/trending|\/recent)?)?$/.test(pathname),
+)
+
+export const selectIsSubscribedRoot = createSelector(
+  [selectPathname], pathname => /^\/(?:discover\/subscribed(\/trending)?)?$/.test(pathname),
+)
+
+export const selectShowCategoryHeader = createSelector(
+  [selectIsGlobalRoot, selectIsSubscribedRoot], (isGlobalRoot, isSubscribedRoot) =>
+    isGlobalRoot || isSubscribedRoot,
 )

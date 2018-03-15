@@ -20,10 +20,11 @@ describe('UserDetailContainer', () => {
       expect(action.payload.endpoint.path).to.contain('/~archer/loves')
     })
 
-    it('returns the correct stream action for posts', () => {
+    it('returns the correct graphql stream action for posts', () => {
       const vo = { username: 'archer' }
       const action = getStreamAction(vo)
-      expect(action.payload.endpoint.path).to.contain('/~archer/posts')
+      expect(action.payload.query).to.contain('userPostStream')
+      expect(action.payload.variables.username).to.equal('~archer')
     })
   })
 })

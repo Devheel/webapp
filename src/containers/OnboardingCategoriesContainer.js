@@ -65,7 +65,7 @@ class OnboardingCategoriesContainer extends PureComponent {
   onNextClick = () => {
     const { dispatch } = this.props
     const categoryIds = this.state.categoryIds
-    dispatch(followCategories(categoryIds))
+    dispatch(followCategories(categoryIds, false))
     dispatch(push('/onboarding/settings'))
   }
 

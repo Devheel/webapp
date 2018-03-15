@@ -5,6 +5,7 @@ import {
   forgotPassword,
   resetPassword,
   refreshAuthToken,
+  webappToken,
 } from '../networking/api'
 import * as ENV from '../../env'
 
@@ -90,6 +91,16 @@ export function signIn(email, password) {
       method: 'POST',
       email,
       password,
+    },
+  }
+}
+
+export function fetchPublicToken() {
+  return {
+    type: AUTHENTICATION.PUBLIC,
+    payload: {
+      endpoint: webappToken(),
+      method: 'GET',
     },
   }
 }

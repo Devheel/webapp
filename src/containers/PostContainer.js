@@ -27,7 +27,7 @@ import {
   PostBody,
   PostBodyWithLightBox,
   PostHeader,
-  RepostHeader,
+  PostDetailHeader,
   UserModal,
 } from '../components/posts/PostRenderables'
 import { isElloAndroid } from '../lib/jello'
@@ -77,7 +77,7 @@ import {
 } from '../selectors/post'
 import { selectAvatar } from '../selectors/profile'
 import {
-  selectIsDiscoverRoot,
+  selectShowCategoryHeader,
   selectIsPostDetail,
   selectPathname,
   selectPreviousPath,
@@ -102,7 +102,7 @@ export function makeMapStateToProps() {
       isArtistInviteSubmission: selectPostIsArtistInviteSubmission(state, props),
       artistInviteSubmission: selectPostArtistInviteSubmission(state, props),
       isCommentsRequesting: selectPostIsCommentsRequesting(state, props),
-      isDiscoverRoot: selectIsDiscoverRoot(state, props),
+      showCategoryHeader: selectShowCategoryHeader(state, props),
       isGridMode: selectPostIsGridMode(state, props),
       isLoggedIn: selectIsLoggedIn(state),
       isMobile: selectIsMobile(state),
@@ -154,7 +154,7 @@ class PostContainer extends Component {
     artistInviteSubmission: PropTypes.object,
     isArtistInviteSubmission: PropTypes.bool.isRequired,
     isCommentsRequesting: PropTypes.bool.isRequired,
-    isDiscoverRoot: PropTypes.bool.isRequired,
+    showCategoryHeader: PropTypes.bool.isRequired,
     isGridMode: PropTypes.bool.isRequired,
     isLoggedIn: PropTypes.bool.isRequired,
     isMobile: PropTypes.bool.isRequired,
@@ -439,7 +439,7 @@ class PostContainer extends Component {
       innerWidth,
       isArtistInviteSubmission,
       isCommentsRequesting,
-      isDiscoverRoot,
+      showCategoryHeader,
       isGridMode,
       isLoggedIn,
       isMobile,
@@ -479,22 +479,9 @@ class PostContainer extends Component {
     if (isPostEmpty || !author || !author.get('id')) { return null }
     let postHeader
     const headerProps = { detailPath, postCreatedAt, postId }
-    if (isRepost && !isLightBox) {
-      postHeader = (
-        <RepostHeader
-          {...headerProps}
-          artistInviteSubmission={artistInviteSubmission}
-          inUserDetail={isPostHeaderHidden}
-          isArtistInviteSubmission={isArtistInviteSubmission}
-          isOwnPost={isOwnPost}
-          isPostDetail={isPostDetail}
-          repostAuthor={repostAuthor}
-          repostedBy={author}
-        />
-      )
-    } else if (isPostHeaderHidden || isLightBox) {
+    if (!isRepost && (isPostHeaderHidden || isLightBox)) {
       postHeader = null
-    } else if (isDiscoverRoot && categoryName && categoryPath) {
+    } else if (!isRepost && showCategoryHeader && categoryName && categoryPath) {
       postHeader = (
         <CategoryHeader
           {...headerProps}
@@ -503,22 +490,36 @@ class PostContainer extends Component {
           categoryPath={categoryPath}
         />
       )
-    } else if (isDiscoverRoot && isArtistInviteSubmission) {
+    } else if (!isRepost && showCategoryHeader && isArtistInviteSubmission) {
       postHeader = (
         <ArtistInviteSubmissionHeader
           {...headerProps}
           author={author}
         />
       )
+    } else if (isPostDetail) {
+      postHeader = (
+        <PostDetailHeader
+          {...headerProps}
+          author={repostAuthor || author}
+          repostedBy={repostAuthor ? author : null}
+          artistInviteSubmission={artistInviteSubmission}
+          inUserDetail={repostAuthor ? isPostHeaderHidden : null}
+          isArtistInviteSubmission={isArtistInviteSubmission}
+          isRepost={isRepost}
+          isOwnPost={isOwnPost}
+        />
+      )
     } else {
       postHeader = (
         <PostHeader
           {...headerProps}
-          artistInviteSubmission={artistInviteSubmission}
-          author={author}
+          author={repostAuthor || author}
+          repostedBy={repostAuthor ? author : null}
+          inUserDetail={repostAuthor ? isPostHeaderHidden : null}
           isArtistInviteSubmission={isArtistInviteSubmission}
+          isRepost={isRepost}
           isOwnPost={isOwnPost}
-          isPostDetail={isPostDetail}
         />
       )
     }

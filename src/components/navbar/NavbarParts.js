@@ -115,9 +115,9 @@ const linkStyle = css(
 )
 
 const highlightingRules = {
-  '/': /^\/$|^\/discover\/trending$|^\/discover\/recent$/,
   '/following': /^\/following/,
   '/artist-invites': /^\/artist-invites$/,
+  '/discover/subscribed': /^\/discover/,
 }
 
 export const NavbarLink = ({
@@ -136,7 +136,7 @@ export const NavbarLink = ({
     className,
     `${linkStyle}`,
     {
-      isActive: highlightingRules[to] ? pathname.match(highlightingRules[to]) : pathname.match(to),
+      isActive: highlightingRules[to] ? pathname.match(highlightingRules[to]) : pathname === to,
     },
   )
   return (

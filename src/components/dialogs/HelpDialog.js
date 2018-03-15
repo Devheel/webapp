@@ -41,7 +41,7 @@ const HelpDialog = () =>
     <p className={textWrapperStyle}><span className={`${textStyle} ${s.monoRegularCSS}`}>{SHORTCUT_KEYS.NOTIFICATIONS}</span> View notifications</p>
     <p className={textWrapperStyle}><span className={`${textStyle} ${s.monoRegularCSS}`}>{SHORTCUT_KEYS.TOGGLE_LAYOUT}</span> Toggle grid mode for main content</p>
     <p className={textWrapperStyle}><span className={`${textStyle} ${s.monoRegularCSS}`}>{SHORTCUT_KEYS.OMNIBAR}</span> Focus post editor</p>
-    <p className={textWrapperStyle}><span className={`${textStyle} ${s.monoRegularCSS}`}>{SHORTCUT_KEYS.ESC.toUpperCase()}</span> Close modal or alerts</p>
+    <p className={textWrapperStyle}><span className={`${textStyle} ${s.monoRegularCSS}`}>ESC</span> Close modal or alerts</p>
     <p className={textWrapperStyle}><span className={`${textStyle} ${s.monoRegularCSS}`}>{SHORTCUT_KEYS.FULLSCREEN}</span> Toggle fullscreen within a post editor</p>
     <p className={textWrapperStyle}><span className={`${textStyle} ${s.monoRegularCSS}`}>{SHORTCUT_KEYS.DT_GRID_TOGGLE}</span> Toggle layout grid</p>
     <p className={textWrapperStyle}><span className={`${textStyle} ${s.monoRegularCSS}`}>{SHORTCUT_KEYS.DT_GRID_CYCLE}</span> Toggle between horizontal and vertical grid</p>

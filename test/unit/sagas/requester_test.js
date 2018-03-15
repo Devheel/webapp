@@ -1,8 +1,5 @@
-import { channel } from 'redux-saga'
 import { clearAuthToken, refreshAuthenticationToken } from '../../../src/actions/authentication'
-import { loadDiscoverPosts } from '../../../src/actions/discover'
 import {
-  handleRequest,
   handleRequestError,
   performRequest,
 } from '../../../src/sagas/requester'
@@ -10,18 +7,6 @@ import { fetchCredentials, sagaFetch } from '../../../src/sagas/api'
 import { selectRefreshToken } from '../../../src/selectors/authentication'
 
 describe('requester saga', function () {
-  it('generates requests to the api', function () {
-    const myChannel = channel()
-    const discoverAction = loadDiscoverPosts('recommended')
-    const requester = handleRequest(myChannel)
-
-    expect(requester).to.take(myChannel)
-    expect(requester.next(discoverAction)).to.fork(performRequest, discoverAction)
-
-    // It then waits around for another request
-    expect(requester).to.take(myChannel)
-  })
-
   describe('#performRequest', function () {
     const pretendAction = {
       type: 'PRETEND_ACTION',

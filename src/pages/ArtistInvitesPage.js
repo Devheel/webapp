@@ -3,28 +3,31 @@ import Immutable from 'immutable'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { loadArtistInvites } from '../actions/artist_invites'
-import { getLinkObject } from '../helpers/json_helper'
 import { trackPostViews } from '../actions/posts'
 import StreamContainer from '../containers/StreamContainer'
 import { HeroHeader } from '../components/heros/HeroRenderables'
 import { MainView } from '../components/views/MainView'
 import { selectQueryPreview } from '../selectors/routing'
-import { selectRandomArtistInvitePromotion } from '../selectors/promotions'
-import { selectJson } from '../selectors/store'
+import { selectRandomPageHeader } from '../selectors/page_headers'
+import { selectUser } from '../selectors/user'
 import { css } from '../styles/jss'
-import { selectDPI } from '../selectors/gui'
+import { selectHeroDPI } from '../selectors/gui'
 
 const streamStyle = css({
   paddingLeft: '0 !important',
   paddingRight: '0 !important',
 })
 
-const mapStateToProps = state => ({
-  dpi: selectDPI(state),
-  isPreview: selectQueryPreview(state) === 'true',
-  json: selectJson(state),
-  randomPromotion: selectRandomArtistInvitePromotion(state),
-})
+function mapStateToProps(state) {
+  const pageHeader = selectRandomPageHeader(state)
+  const user = pageHeader ? selectUser(state, { userId: pageHeader.get('userId') }) : null
+  return {
+    dpi: selectHeroDPI(state),
+    isPreview: selectQueryPreview(state) === 'true',
+    user,
+    pageHeader,
+  }
+}
 
 class ArtistInvitesPage extends Component {
 
@@ -32,40 +35,39 @@ class ArtistInvitesPage extends Component {
     dispatch: PropTypes.func.isRequired,
     dpi: PropTypes.string.isRequired,
     isPreview: PropTypes.bool,
-    json: PropTypes.object,
-    randomPromotion: PropTypes.object,
+    pageHeader: PropTypes.object,
+    user: PropTypes.object,
   }
 
   static defaultProps = {
     isPreview: false,
-    json: null,
-    randomPromotion: null,
+    pageHeader: null,
+    user: null,
   }
 
   shouldComponentUpdate(nextProps) {
-    return !Immutable.is(nextProps.randomPromotion, this.props.randomPromotion) ||
+    return !Immutable.is(nextProps.pageHeader, this.props.pageHeader) ||
       ['dpi'].some(prop =>
         nextProps[prop] !== this.props[prop],
       )
   }
 
   componentDidUpdate() {
-    const { dispatch, randomPromotion } = this.props
-    if (randomPromotion && randomPromotion.get('postToken')) {
-      dispatch(trackPostViews([], [randomPromotion.get('postToken')], 'promo'))
+    const { dispatch, pageHeader } = this.props
+    if (pageHeader && pageHeader.get('postToken')) {
+      dispatch(trackPostViews([], [pageHeader.get('postToken')], 'promo'))
     }
   }
 
   render() {
-    const { dpi, json, randomPromotion } = this.props
+    const { dpi, pageHeader, user } = this.props
     let hero
-    if (randomPromotion) {
-      const header = randomPromotion.get('header', '')
-      const subheader = randomPromotion.get('subheader', '')
-      const user = getLinkObject(randomPromotion, 'user', json) || Immutable.Map()
+    if (pageHeader) {
+      const header = pageHeader.get('header', '')
+      const subheader = pageHeader.get('subheader', '')
       const avatarSources = user.get('avatar', null)
       const username = user.get('username', null)
-      const sources = randomPromotion.get('image', null)
+      const sources = pageHeader.get('image', null)
       hero = (<HeroHeader
         dpi={dpi}
         headerText={header}

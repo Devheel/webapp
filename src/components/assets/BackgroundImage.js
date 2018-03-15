@@ -4,6 +4,7 @@ import PropTypes from 'prop-types'
 import classNames from 'classnames'
 import { Link } from 'react-router'
 import ImageAsset from '../assets/ImageAsset'
+import VideoAsset from '../assets/VideoAsset'
 import { isGif } from '../../helpers/file_helper'
 import { before, css, media, modifier, select } from '../../styles/jss'
 import * as s from '../../styles/jso'
@@ -21,6 +22,8 @@ export function getSource(props) {
     return ''
   } else if (sources.getIn(['tmp', 'url'])) {
     return sources.getIn(['tmp', 'url'])
+  } else if (useGif && isGif(sources.getIn(['original', 'url'])) && sources.hasIn(['video', 'url'])) {
+    return sources.getIn(['video', 'url'])
   } else if (useGif && isGif(sources.getIn(['original', 'url']))) {
     return sources.getIn(['original', 'url'])
   }
@@ -51,6 +54,16 @@ const baseStyle = css(
   media(s.maxBreak2, modifier('.inHeroProfile', { height: 220 })),
   media(s.minBreak2, modifier('.inSettings', { minHeight: 330 })),
   media(s.minBreak2, modifier('.inUserProfileCard:not(.isMiniProfileCard)', { minHeight: 540 })),
+)
+
+const editorialVideoStyle = css(
+  {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+    minWidth: '100%',
+    minHeight: '100%',
+  },
 )
 
 export default class BackgroundImage extends PureComponent {
@@ -94,12 +107,24 @@ export default class BackgroundImage extends PureComponent {
     const { className, onClick, to } = this.props
     const { status } = this.state
     const classList = classNames(`BackgroundImage ${baseStyle}`, status, className)
+    const src = getSource(this.props)
+    const isVideo = !!src && src.substr(-3) === 'mp4'
     const imageAssetProps = {
       isBackgroundImage: true,
       onLoadFailure: this.onLoadFailure,
       onLoadSuccess: this.onLoadSuccess,
-      src: getSource(this.props),
+      src,
     }
+    const videoAssetProps = {
+      src,
+    }
+
+    if (isVideo) {
+      return (<Link className={classNames(classList, 'isLink')} onClick={onClick} to={to}>
+        <VideoAsset {...videoAssetProps} className={editorialVideoStyle} />
+      </Link>)
+    }
+
     return to ?
       <Link className={classNames(classList, 'isLink')} onClick={onClick} to={to}>
         <ImageAsset {...imageAssetProps} />

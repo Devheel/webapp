@@ -1,3 +1,4 @@
+import { Map } from 'immutable'
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { bindActionCreators } from 'redux'
@@ -6,13 +7,13 @@ import { push } from 'react-router-redux'
 import classNames from 'classnames'
 import { trackEvent, trackInitialPage } from '../actions/analytics'
 import { loadBadges } from '../actions/badges'
-import { getCategories, getPagePromotionals } from '../actions/discover'
+import { getNavCategories } from '../actions/discover'
 import { setSignupModalLaunched } from '../actions/gui'
 import { openModal } from '../actions/modals'
 import { loadAnnouncements, loadNotifications } from '../actions/notifications'
 import { lovePost, unlovePost } from '../actions/posts'
 import { loadProfile } from '../actions/profile'
-import { fetchAuthenticationPromos } from '../actions/promotions'
+import { loadPageHeaders } from '../actions/page_headers'
 import DevTools from '../components/devtools/DevTools'
 import RegistrationRequestDialog from '../components/dialogs/RegistrationRequestDialog'
 import ShareDialog from '../components/dialogs/ShareDialog'
@@ -20,7 +21,7 @@ import CreatorTypesModal from '../components/modals/CreatorTypesModal'
 import { addGlobalDrag, removeGlobalDrag } from '../components/viewport/GlobalDragComponent'
 import AnalyticsContainer from '../containers/AnalyticsContainer'
 import FooterContainer from '../containers/FooterContainer'
-import HeroContainer from '../containers/HeroContainer'
+import HeroDispatchContainer from '../containers/HeroDispatchContainer'
 import InputContainer from '../containers/InputContainer'
 import KeyboardContainer from '../containers/KeyboardContainer'
 import MetaContainer from '../containers/MetaContainer'
@@ -33,22 +34,17 @@ import * as ElloAndroidInterface from '../lib/android_interface'
 import { selectIsLoggedIn } from '../selectors/authentication'
 import { selectIsGridMode } from '../selectors/gui'
 import { selectIsStaff, selectShowCreatorTypeModal } from '../selectors/profile'
-import {
-  selectCategoryData,
-  selectIsCategoryPromotion,
-  selectIsPagePromotion,
-  selectRandomAuthPromotion,
-} from '../selectors/promotions'
 import { selectIsAuthenticationView } from '../selectors/routing'
+import { selectRandomAuthPageHeader } from '../selectors/page_headers'
+import { selectUser } from '../selectors/user'
 
 function mapStateToProps(state) {
+  const authPromo = selectRandomAuthPageHeader(state)
   return {
-    authPromo: selectRandomAuthPromotion(state),
-    categoryData: selectCategoryData(state),
+    authPromo,
+    authPromoUser: authPromo ? selectUser(state, { userId: authPromo.get('userId') }) : Map(),
     isAuthenticationView: selectIsAuthenticationView(state),
-    isCategoryPromotion: selectIsCategoryPromotion(state),
     isLoggedIn: selectIsLoggedIn(state),
-    isPagePromotion: selectIsPagePromotion(state),
     isStaff: selectIsStaff(state),
     isGridMode: selectIsGridMode(state),
     showCreatorTypeModal: selectShowCreatorTypeModal(state),
@@ -59,14 +55,12 @@ class AppContainer extends Component {
 
   static propTypes = {
     authPromo: PropTypes.object,
-    categoryData: PropTypes.object.isRequired,
+    authPromoUser: PropTypes.object,
     children: PropTypes.node.isRequired,
     dispatch: PropTypes.func.isRequired,
     isAuthenticationView: PropTypes.bool.isRequired,
-    isCategoryPromotion: PropTypes.bool.isRequired,
     isGridMode: PropTypes.bool.isRequired,
     isLoggedIn: PropTypes.bool.isRequired,
-    isPagePromotion: PropTypes.bool.isRequired,
     isStaff: PropTypes.bool.isRequired,
     params: PropTypes.object.isRequired,
     showCreatorTypeModal: PropTypes.bool.isRequired,
@@ -74,6 +68,7 @@ class AppContainer extends Component {
 
   static defaultProps = {
     authPromo: null,
+    authPromoUser: null,
   }
 
   static childContextTypes = {
@@ -109,10 +104,9 @@ class AppContainer extends Component {
       dispatch(loadNotifications({ category: 'all' }))
       dispatch(loadAnnouncements())
     } else {
-      dispatch(fetchAuthenticationPromos())
+      dispatch(loadPageHeaders({ kind: 'AUTHENTICATION' }))
     }
-    dispatch(getCategories())
-    dispatch(getPagePromotionals())
+    dispatch(getNavCategories())
     dispatch(loadBadges())
     ElloAndroidInterface.initialize(dispatch, isStaff)
   }
@@ -121,14 +115,12 @@ class AppContainer extends Component {
     const { dispatch } = nextProps
     if (!this.props.isLoggedIn && nextProps.isLoggedIn) {
       dispatch(loadProfile())
-      dispatch(getCategories())
-      dispatch(getPagePromotionals())
+      dispatch(getNavCategories())
       dispatch(loadBadges())
       dispatch(loadAnnouncements())
     } else if (this.props.isLoggedIn && !nextProps.isLoggedIn) {
-      dispatch(fetchAuthenticationPromos())
-      dispatch(getCategories())
-      dispatch(getPagePromotionals())
+      dispatch(loadPageHeaders({ kind: 'AUTHENTICATION' }))
+      dispatch(getNavCategories())
       dispatch(loadBadges())
     }
     if (nextProps.showCreatorTypeModal) {
@@ -151,10 +143,10 @@ class AppContainer extends Component {
   // TODO: Rename this to openRegistrationRequestDialog since it's a method
   // call and not coming directly from an event.
   onClickOpenRegistrationRequestDialog = (trackPostfix = 'modal') => {
-    const { authPromo, dispatch, isAuthenticationView } = this.props
+    const { authPromo, authPromoUser, dispatch, isAuthenticationView } = this.props
     if (isAuthenticationView || !authPromo) { return }
     dispatch(openModal(
-      <RegistrationRequestDialog promotional={authPromo} />,
+      <RegistrationRequestDialog pageHeader={authPromo} user={authPromoUser} />,
       'asDecapitated',
       'RegistrationRequestDialog',
       `open-registration-request-${trackPostfix}`,
@@ -202,22 +194,14 @@ class AppContainer extends Component {
     // absolute link and we allow it's default behavior.
   }
 
-  onClickTrackCredits = () => {
-    const { dispatch, categoryData, isCategoryPromotion, isPagePromotion } = this.props
-    let label = ''
-    if (isCategoryPromotion && categoryData) {
-      label = categoryData.category.get('slug')
-    } else if (isPagePromotion) {
-      label = 'general'
-    } else {
-      label = 'auth'
-    }
+  onClickTrackCredits = (label) => {
+    const { dispatch } = this.props
     dispatch(trackEvent('promoByline_clicked', { name: label }))
   }
 
-  onClickTrackCTA = () => {
-    const { dispatch, categoryData } = this.props
-    dispatch(trackEvent('promoCTA_clicked', { name: categoryData.category.get('slug', 'general') }))
+  onClickTrackCTA = (label) => {
+    const { dispatch } = this.props
+    dispatch(trackEvent('promoCTA_clicked', { name: label }))
   }
 
   onLaunchNativeEditor = (post = null, isComment = false, comment = null, text = null) => {
@@ -268,7 +252,7 @@ class AppContainer extends Component {
         <MetaContainer params={params} />
         <ViewportContainer params={params} />
         {isLoggedIn ? <OmnibarContainer /> : null}
-        <HeroContainer params={params} />
+        <HeroDispatchContainer params={params} />
         {children}
         <NavbarContainer params={params} />
         {!isAuthenticationView && <FooterContainer params={params} />}

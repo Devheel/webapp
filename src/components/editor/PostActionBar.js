@@ -60,7 +60,6 @@ const buttonStyle = css(
       '.isComment',
       s.wv40,
       disabled(s.bgcA),
-      media(s.minBreak2, { width: 'auto' }),
     ),
     parent(
       '.PostGrid .isComment',
@@ -96,10 +95,6 @@ const labelStyle = css(
     parent(
       '.PostDetail .forComment',
       select('& + .SVGIcon', { marginRight: 11, marginLeft: 11 }),
-    ),
-    parent(
-      '.isComment .forComment',
-      select('& + .SVGIcon', { marginRight: 11 }),
     ),
   ),
   parent('.forSubmit', s.inlineBlock, select('& + .SVGIcon', { marginRight: 11 })),

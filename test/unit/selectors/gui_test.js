@@ -176,22 +176,22 @@ describe('gui selectors', () => {
     it('selects with memoization the full screen dpi setting as a string', () => {
       let state = { gui: Immutable.fromJS({ innerWidth: 375, change: false }) }
       selector.selectDPI.resetRecomputations()
-      expect(selector.selectDPI(state)).to.equal('hdpi')
+      expect(selector.selectDPI(state)).to.equal('mdpi')
 
       state = { gui: state.gui.set('change', true) }
-      expect(selector.selectDPI(state)).to.equal('hdpi')
+      expect(selector.selectDPI(state)).to.equal('mdpi')
       expect(selector.selectDPI.recomputations()).to.equal(1)
 
       state = { gui: state.gui.set('change', false).set('innerWidth', 1280) }
-      expect(selector.selectDPI(state)).to.equal('xhdpi')
+      expect(selector.selectDPI(state)).to.equal('hdpi')
       expect(selector.selectDPI.recomputations()).to.equal(2)
 
       state = { gui: state.gui.set('innerWidth', 2560) }
-      expect(selector.selectDPI(state)).to.equal('optimized')
+      expect(selector.selectDPI(state)).to.equal('hdpi')
       expect(selector.selectDPI.recomputations()).to.equal(3)
 
       state = { gui: state.gui.set('change', true) }
-      expect(selector.selectDPI(state)).to.equal('optimized')
+      expect(selector.selectDPI(state)).to.equal('hdpi')
       expect(selector.selectDPI.recomputations()).to.equal(3)
     })
   })

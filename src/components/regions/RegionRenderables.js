@@ -124,7 +124,7 @@ export class RegionItems extends PureComponent {
               isLightBoxImage={isLightBox}
               isLightBoxSelected={isLightBox ? this.getLightBoxSelected(assetId) : null}
               resizeLightBoxImage={resizeLightBox}
-              shouldUseVideo={!!(asset && asset.getIn(['attachment', 'video'], Immutable.Map()).size) && !isIOS() && !isPostDetail}
+              shouldUseVideo={!!(asset && asset.getIn(['attachment', 'video', 'url'], null)) && !isIOS() && !isPostDetail}
               handleStaticImageRegionClick={
                 event => handleStaticImageRegionClick(event, assetId, postId, toggleLightBox)
               }

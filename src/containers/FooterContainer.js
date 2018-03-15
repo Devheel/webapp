@@ -7,7 +7,7 @@ import { trackEvent } from '../actions/analytics'
 import { checkAvailability, resetAvailability } from '../actions/profile'
 import { getEmailStateFromClient, getEmailStateFromServer } from '../components/forms/Validators'
 import { Footer } from '../components/footer/FooterRenderables'
-import { LOAD_NEXT_CONTENT_REQUEST, SET_LAYOUT_MODE } from '../constants/action_types'
+import { LOAD_NEXT_CONTENT_REQUEST, SET_LAYOUT_MODE, V3 } from '../constants/action_types'
 import { FOOTER_LINKS as links } from '../constants/locales/en'
 import { FORM_CONTROL_STATUS as STATUS } from '../constants/status_types'
 import { isIOS, scrollToPosition } from '../lib/jello'
@@ -19,7 +19,11 @@ import {
 } from '../selectors/gui'
 import { selectIsModalActive } from '../selectors/modal'
 import { selectAvailability } from '../selectors/profile'
-import { selectPathname, selectViewNameFromRoute } from '../selectors/routing'
+import {
+  selectPathname,
+  selectViewNameFromRoute,
+  selectIsPostDetail,
+} from '../selectors/routing'
 import { selectStreamType } from '../selectors/stream'
 import type { Availability } from '../types/flowtypes'
 
@@ -30,6 +34,8 @@ type Props = {
   dispatch: () => void,
   formActionPath: string,
   isEditorial: boolean,
+  isPostDetail: boolean,
+  isDiscoverAll: boolean,
   isGridMode: boolean,
   isLayoutToolHidden: boolean,
   isLoggedIn: boolean,
@@ -51,6 +57,8 @@ function mapStateToProps(state, props) {
   const streamType = selectStreamType(state)
   const pathname = selectPathname(state)
   const isEditorial = selectViewNameFromRoute(state, props) === 'editorial'
+  const isPostDetail = selectIsPostDetail(state, props)
+  const isDiscoverAll = selectViewNameFromRoute(state, props) === 'discoverAll'
   let isLayoutToolHidden = selectIsLayoutToolHidden(state, props)
   // hide the layout tool on the editorial homepage
   if (isEditorial) { isLayoutToolHidden = true }
@@ -58,12 +66,15 @@ function mapStateToProps(state, props) {
     availability: selectAvailability(state),
     formActionPath: checkAvailability().payload.endpoint.path,
     isEditorial,
+    isPostDetail,
+    isDiscoverAll,
     isGridMode: selectIsGridMode(state),
     isLayoutToolHidden,
     isLoggedIn: selectIsLoggedIn(state),
     isMobile: selectIsMobile(state),
     isModalActive: selectIsModalActive(state),
-    isPaginatoring: streamType === LOAD_NEXT_CONTENT_REQUEST,
+    isPaginatoring: streamType === LOAD_NEXT_CONTENT_REQUEST ||
+      streamType === V3.LOAD_NEXT_CONTENT_REQUEST,
     pathname,
   }
 }
@@ -115,7 +126,7 @@ class FooterContainer extends Component {
   shouldComponentUpdate(nextProps, nextState) {
     const { isLoggedIn } = this.props
     return !is(nextProps.availability, this.props.availability) ||
-      ['isGridMode', 'isLayoutToolHidden', 'isLoggedIn', 'isMobile', 'isPaginatoring'].some(prop =>
+      ['isGridMode', 'isPostDetail', 'isDiscoverAll', 'isLayoutToolHidden', 'isLoggedIn', 'isMobile', 'isPaginatoring'].some(prop =>
         nextProps[prop] !== this.props[prop],
       ) ||
       (!isLoggedIn && ['emailStatus', 'formMessage', 'formStatus', 'isFormDisabled', 'isFormFocused'].some(prop =>
@@ -219,6 +230,8 @@ class FooterContainer extends Component {
       formMessage: this.state.formMessage,
       formStatus: this.state.formStatus,
       isEditorial: this.props.isEditorial,
+      isPostDetail: this.props.isPostDetail,
+      isDiscoverAll: this.props.isDiscoverAll,
       isFormDisabled: this.state.isFormDisabled,
       isFormFocused: this.state.isFormFocused,
       isGridMode: this.props.isGridMode,

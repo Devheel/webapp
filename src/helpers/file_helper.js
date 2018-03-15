@@ -7,7 +7,7 @@ export const SUPPORTED_IMAGE_TYPES = {
   PNG: 'image/png',
 }
 
-export const isGif = filename => /gif$/.test(filename)
+export const isGif = filename => /(gif|mp4)$/.test(filename)
 
 export function isValidFileType(file) {
   return new Promise((resolve, reject) => {

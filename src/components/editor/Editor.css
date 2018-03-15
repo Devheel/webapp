@@ -19,6 +19,10 @@
   transition: background-color var(--speed) ease;
 }
 
+.PostDetail .editor-region {
+  margin-top: 30px;
+}
+
 .editor.isComment {
   margin-top: 10px;
 }
@@ -78,6 +82,12 @@
   white-space: pre-wrap;
   word-break: break-word; /* stylelint-disable-line */
   background: #e5e5e5;
+}
+
+.editor-block.readonly img {
+  display: block;
+  margin: 0 auto;
+  margin-bottom: 10px;
 }
 
 .DragBlock {

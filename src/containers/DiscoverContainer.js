@@ -1,75 +1,73 @@
-import React, { PureComponent } from 'react'
+import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import {
   bindDiscoverKey,
-  getCategories,
-  loadCategoryPosts,
-  // loadCommunities,
-  loadDiscoverPosts,
-  // loadFeaturedUsers,
+  loadGlobalPostStream,
+  loadSubscribedPostStream,
+  loadCategoryPostStream,
 } from '../actions/discover'
 import { Discover } from '../components/views/Discover'
-import { selectParamsType } from '../selectors/params'
-import { selectPropsPathname } from '../selectors/routing'
+import {
+  selectPropsPathname,
+  selectDiscoverStream,
+  selectDiscoverStreamKind,
+  selectPropsQueryBefore,
+} from '../selectors/routing'
 
-// TODO: Move to a selector
-export function getStreamAction(type) {
-  switch (type) {
-    // case 'communities':
-    //   return loadCommunities()
-    // case 'featured-users':
-    //   return loadFeaturedUsers()
-    case 'featured':
-    case 'recommended':
-      return loadCategoryPosts()
-    case 'recent':
-    case 'trending':
-      return loadDiscoverPosts(type)
-    case 'all':
-      return getCategories()
+export function getStreamAction(stream, kind, before) {
+  switch (stream) {
+    case 'global':
+      return loadGlobalPostStream(kind, before)
+    case 'subscribed':
+      return loadSubscribedPostStream(kind, before)
     default:
-      return loadCategoryPosts(type)
+      return loadCategoryPostStream(stream, kind, before)
   }
 }
 
 function mapStateToProps(state, props) {
   return {
-    paramsType: selectParamsType(state, props),
+    stream: selectDiscoverStream(state, props),
+    kind: selectDiscoverStreamKind(state, props),
     pathname: selectPropsPathname(state, props),
+    before: selectPropsQueryBefore(state, props),
   }
 }
 
-class DiscoverContainer extends PureComponent {
+class DiscoverContainer extends Component {
   static propTypes = {
     dispatch: PropTypes.func.isRequired,
-    paramsType: PropTypes.string.isRequired,
+    stream: PropTypes.string.isRequired,
+    kind: PropTypes.string.isRequired,
     pathname: PropTypes.string.isRequired,
+    before: PropTypes.string,
   }
 
   static defaultProps = {
-    paramsType: 'featured',
+    before: null,
   }
 
   componentWillMount() {
-    const { dispatch, paramsType } = this.props
-    dispatch(bindDiscoverKey(paramsType))
+    const { dispatch, pathname } = this.props
+    dispatch(bindDiscoverKey(pathname))
   }
 
   componentDidUpdate(prevProps) {
-    const { dispatch, paramsType, pathname } = this.props
+    const { dispatch, pathname } = this.props
     if (prevProps.pathname !== pathname) {
-      dispatch(bindDiscoverKey(paramsType))
+      dispatch(bindDiscoverKey(pathname))
     }
   }
 
   render() {
-    const { paramsType } = this.props
+    const { stream, kind, before } = this.props
     return (
       <Discover
-        inAllCategories={paramsType === 'all'}
-        key={`discover_${paramsType}`}
-        streamAction={getStreamAction(paramsType)}
+        stream={stream}
+        kind={kind}
+        key={`discover_${stream}_${kind}`}
+        streamAction={getStreamAction(stream, kind, before)}
       />
     )
   }

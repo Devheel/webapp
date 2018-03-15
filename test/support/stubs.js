@@ -279,7 +279,6 @@ export function stubCategories(properties) {
   categories.forEach((category, index) => {
     const defaultProps = {
       id: index + 1,
-      links: { recent: { related: `/categories/${category.name}/posts/recent` } },
       name: upperFirst(category.slug),
       slug: category.slug,
       tileImage: {

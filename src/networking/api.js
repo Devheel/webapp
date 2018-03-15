@@ -153,13 +153,6 @@ export function followCategories() {
   }
 }
 // Onboarding
-export function awesomePeoplePath() {
-  const params = { per_page: PER_PAGE }
-  return {
-    path: getAPIPath('discover/users/onboarding', params),
-    params,
-  }
-}
 export function communitiesPath() {
   const params = { name: 'onboarding', per_page: PER_PAGE }
   return {
@@ -193,17 +186,6 @@ export function categoryPosts(type) {
 export function pagePromotionals() {
   return {
     path: getAPIPath('page_promotionals?include_extras=true'),
-  }
-}
-// Discover
-export function discoverPosts(type) {
-  const params = {
-    per_page: PER_PAGE,
-    ...getPagingQueryParams(window.location.search),
-  }
-  return {
-    path: getAPIPath(`discover/posts/${type}`, params),
-    params,
   }
 }
 // Streams

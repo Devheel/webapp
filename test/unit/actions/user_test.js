@@ -51,23 +51,16 @@ describe('user actions', () => {
     })
   })
 
-  context('#loadUserPosts', () => {
-    const action = subject.loadUserPosts('archer', 'posts')
+  context('#loadUserPostsV3', () => {
+    const action = subject.loadUserPostsV3('archer', 'posts')
 
     it('is an FSA compliant action', () => {
       expect(isFSA(action)).to.be.true
     })
 
-    it('has a top level action.type', () => {
-      expect(isFSAName(action, subject.loadUserPosts)).to.be.true
-    })
-
-    it('has the correct api endpoint in the action', () => {
-      expect(action.payload.endpoint.path).to.contain('/archer/posts')
-    })
-
-    it('has the correct mapping type in the action', () => {
-      expect(action.meta.mappingType).to.equal('posts')
+    it('has the correct query in the action', () => {
+      expect(action.payload.query).to.contain('userPostStream')
+      expect(action.payload.variables.username).to.equal('archer')
     })
 
     it('has asList and asGrid properties on renderStreams in the action', () => {

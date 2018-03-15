@@ -333,6 +333,7 @@ export const nowrap = { whiteSpace: 'nowrap' }
 export const breakWord = { wordWrap: 'break-word' }
 export const ellipsis = { textOverflow: 'ellipsis' }
 export const truncate = { ...fit, ...overflowHidden, ...ellipsis, ...nowrap }
+export const resetList = { listStyleType: 'none', margin: 0 }
 
 // -------------------------------------
 // Colors, backgrounds, opacity & fills
@@ -375,6 +376,7 @@ export const borderBottom = { borderBottom: '1px solid' }
 export const borderBlack = { border: '1px solid #000' }
 export const borderWhite = { border: '1px solid #fff' }
 export const borderGreen = { border: '1px solid #00d100' }
+export const strokeGreen = { stroke: '#00d100' }
 export const borderA = { border: '1px solid #aaa' }
 
 // -------------------------------------

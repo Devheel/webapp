@@ -19,6 +19,7 @@ import {
 } from '../components/viewport/ScrollComponent'
 import * as ACTION_TYPES from '../constants/action_types'
 import { runningFetches } from '../sagas/requester'
+import { v3IsRunning } from '../sagas/v3_requester'
 import { selectIsLoggedIn } from '../selectors/authentication'
 import {
   selectColumnCount,
@@ -50,6 +51,52 @@ function makeMapStateToProps() {
       resultPath: selectStreamResultPath(state, props),
       stream: selectStream(state),
     })
+}
+
+function buildNextPageAction(action, pagination) {
+  const { meta } = action
+  const next = pagination.get('next')
+  // V3/GraphQL pagination
+  if (pagination.get('query')) {
+    const variables = pagination.get('variables', {})
+    return {
+      ...action,
+      type: ACTION_TYPES.V3.LOAD_NEXT_CONTENT,
+      payload: {
+        query: pagination.get('query'),
+        variables: variables.merge({ before: next }),
+      },
+      meta: {
+        mappingType: meta.mappingType,
+        resultFilter: meta.resultFilter,
+        resultKey: meta.resultKey,
+      },
+    }
+  }
+  return {
+    ...action,
+    type: ACTION_TYPES.LOAD_NEXT_CONTENT,
+    payload: {
+      endpoint: { path: next },
+    },
+    meta: {
+      mappingType: meta.mappingType,
+      resultFilter: meta.resultFilter,
+      resultKey: meta.resultKey,
+    },
+  }
+}
+
+function lastPage(action, stream, pagination) {
+  return (!action.payload.endpoint && !action.payload.query) ||
+    !pagination.get('next') ||
+    Number(pagination.get('totalPagesRemaining')) === 0 ||
+    pagination.get('isLastPage', false) === true ||
+    (stream.get('type') === ACTION_TYPES.LOAD_NEXT_CONTENT_SUCCESS && stream.getIn(['payload', 'serverStatus']) === 204)
+}
+
+function nextPageInFlight(pagination) {
+  return runningFetches[pagination.next] || v3IsRunning(pagination)
 }
 
 class StreamContainer extends Component {
@@ -126,7 +173,8 @@ class StreamContainer extends Component {
       addScrollTarget(this.scrollObject)
     }
     if (!action) { return }
-    if (stream.get('type') === ACTION_TYPES.LOAD_NEXT_CONTENT_SUCCESS) {
+    if (stream.get('type') === ACTION_TYPES.LOAD_NEXT_CONTENT_SUCCESS ||
+      stream.get('type') === ACTION_TYPES.V3.LOAD_NEXT_CONTENT_SUCCESS) {
       this.setState({ hidePaginator: true })
     }
     if (selectActionPath(this.props) === nextProps.stream.getIn(['payload', 'endpoint', 'path'])) {
@@ -215,30 +263,16 @@ class StreamContainer extends Component {
     }
   }
 
+
   loadPage(rel) {
     const { dispatch, result, stream } = this.props
     const { action } = this.state
     if (!action) { return }
-    const { meta } = action
     const pagination = result.get('pagination')
-    if (!action.payload.endpoint || !pagination.get(rel) ||
-        Number(pagination.get('totalPagesRemaining')) === 0 ||
-        (stream.get('type') === ACTION_TYPES.LOAD_NEXT_CONTENT_SUCCESS &&
-         stream.getIn(['payload', 'serverStatus']) === 204)) { return }
-    if (runningFetches[pagination[rel]]) { return }
+    if (lastPage(action, stream, pagination)) { return }
+    if (nextPageInFlight(pagination)) { return }
     this.setState({ hidePaginator: false })
-    const infiniteAction = {
-      ...action,
-      type: ACTION_TYPES.LOAD_NEXT_CONTENT,
-      payload: {
-        endpoint: { path: pagination.get(rel) },
-      },
-      meta: {
-        mappingType: meta.mappingType,
-        resultFilter: meta.resultFilter,
-        resultKey: meta.resultKey,
-      },
-    }
+    const infiniteAction = buildNextPageAction(action, pagination, rel)
     // this is used for updating the postId on a comment
     // so that the post exsists in the store after load
     if (action.payload.postIdOrToken) {
@@ -287,16 +321,19 @@ class StreamContainer extends Component {
 
   render() {
     const { className, columnCount, hasShowMoreButton, isGridMode, isPostHeaderHidden,
-      paginatorCentered, paginatorText, paginatorTo, result, stream } = this.props
+      paginatorCentered, paginatorText, paginatorTo, result, stream, resultPath } = this.props
     const { action, hidePaginator, renderType } = this.state
     if (!action) { return null }
     if (!result.get('ids').size) {
       switch (renderType) {
         case ACTION_TYPES.LOAD_STREAM_SUCCESS:
+        case ACTION_TYPES.V3.LOAD_STREAM_SUCCESS:
           return this.renderZeroState()
         case ACTION_TYPES.LOAD_STREAM_REQUEST:
+        case ACTION_TYPES.V3.LOAD_STREAM_REQUEST:
           return this.renderLoading()
         case ACTION_TYPES.LOAD_STREAM_FAILURE:
+        case ACTION_TYPES.V3.LOAD_STREAM_FAILURE:
           if (stream.error) {
             return this.renderError()
           }
@@ -308,22 +345,31 @@ class StreamContainer extends Component {
     const { meta } = action
     const renderMethod = isGridMode ? 'asGrid' : 'asList'
     const pagination = result.get('pagination')
+    const isLastPage = pagination.get('isLastPage', false)
+    let nextPagePath = null
+    if (!isLastPage && resultPath.includes('/discover')) {
+      nextPagePath = `${resultPath}?before=${pagination.get('next')}`
+    }
     return (
       <section className={classNames('StreamContainer', className)}>
         {meta.renderStream[renderMethod](result.get('ids'), columnCount, isPostHeaderHidden, meta.renderProps)}
-        <Paginator
-          hasShowMoreButton={
-            (hasShowMoreButton && stream.getIn(['payload', 'serverStatus']) !== 204) ||
-            (typeof meta.resultKey !== 'undefined' && typeof meta.updateKey !== 'undefined')
-          }
-          isCentered={paginatorCentered}
-          isHidden={hidePaginator}
-          loadNextPage={this.onLoadNextPage}
-          messageText={paginatorText}
-          to={paginatorTo}
-          totalPages={Number(pagination.get('totalPages'))}
-          totalPagesRemaining={Number(pagination.get('totalPagesRemaining'))}
-        />
+
+        {!isLastPage &&
+          <Paginator
+            hasShowMoreButton={
+              ((hasShowMoreButton && stream.getIn(['payload', 'serverStatus']) !== 204) && !pagination.get('isLastPage', false)) ||
+              (typeof meta.resultKey !== 'undefined' && typeof meta.updateKey !== 'undefined')
+            }
+            isCentered={paginatorCentered}
+            isHidden={hidePaginator}
+            loadNextPage={this.onLoadNextPage}
+            messageText={paginatorText}
+            to={paginatorTo}
+            totalPages={Number(pagination.get('totalPages'))}
+            nextPagePath={nextPagePath}
+            totalPagesRemaining={Number(pagination.get('totalPagesRemaining'))}
+          />
+        }
       </section>
     )
   }

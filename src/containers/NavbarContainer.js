@@ -12,7 +12,7 @@ import { NavbarLoggedIn, NavbarLoggedOut } from '../components/navbar/NavbarRend
 import { ADD_NEW_IDS_TO_RESULT, SET_LAYOUT_MODE } from '../constants/action_types'
 import { scrollToPosition } from '../lib/jello'
 import * as ElloAndroidInterface from '../lib/android_interface'
-import { selectCategoryTabs } from '../selectors/categories'
+import { selectCategoryTabs, selectAreCategoriesSubscribed } from '../selectors/categories'
 import { selectIsLoggedIn } from '../selectors/authentication'
 import {
   selectActiveNotificationsType,
@@ -26,7 +26,6 @@ import {
 } from '../selectors/gui'
 import { selectAnnouncementHasBeenViewed } from '../selectors/notifications'
 import { selectPage } from '../selectors/pages'
-import { selectParamsType } from '../selectors/params'
 import { selectAvatar, selectUsername, selectIsBrand } from '../selectors/profile'
 import { selectPathname, selectViewNameFromRoute } from '../selectors/routing'
 
@@ -35,10 +34,10 @@ function mapStateToProps(state, props) {
   const isLoggedIn = selectIsLoggedIn(state)
   const pathname = selectPathname(state)
   const pageResult = selectPage(state)
-  const paramsType = selectParamsType(state, props)
   const hasLoadMoreButton = !!(pageResult && pageResult.get('morePostIds'))
   const viewName = selectViewNameFromRoute(state)
-  const categoryTabs = viewName === 'discover' && paramsType !== 'all' ? selectCategoryTabs(state) : null
+  const categoryTabs = viewName === 'discover' ? selectCategoryTabs(state) : null
+  const areCategoriesSubscribed = selectAreCategoriesSubscribed(state)
   const isUnread = selectIsNotificationsUnread(state) || !selectAnnouncementHasBeenViewed(state)
   const isGridMode = selectIsGridMode(state)
   const deviceSize = selectDeviceSize(state)
@@ -49,6 +48,7 @@ function mapStateToProps(state, props) {
       artistInvitesInProfileMenu: (innerWidth <= 700 && innerWidth >= 640) || innerWidth < 372,
       avatar: selectAvatar(state),
       categoryTabs,
+      areCategoriesSubscribed,
       deviceSize,
       hasLoadMoreButton,
       isGridMode,
@@ -65,6 +65,7 @@ function mapStateToProps(state, props) {
   }
   return {
     categoryTabs,
+    areCategoriesSubscribed,
     deviceSize,
     hasLoadMoreButton,
     isGridMode,

@@ -1,89 +1,84 @@
+import React from 'react'
 import * as ACTION_TYPES from '../constants/action_types'
-import * as MAPPING_TYPES from '../constants/mapping_types'
-import * as api from '../networking/api'
-import * as StreamFilters from '../components/streams/StreamFilters'
 import * as StreamRenderables from '../components/streams/StreamRenderables'
+import navCategoriesQuery from '../queries/navCategories'
+import allCategoriesQuery from '../queries/allCategories'
+import { ZeroSubscribedStream } from '../components/zeros/Zeros'
+import {
+  globalPostStreamQuery,
+  subscribedPostStreamQuery,
+  categoryPostStreamQuery,
+} from '../queries/postStreamQueries'
+
+const KINDS = {
+  featured: 'FEATURED',
+  recent: 'RECENT',
+  trending: 'TRENDING',
+}
+
+const postStreamMeta = {
+  renderStream: {
+    asList: StreamRenderables.postsAsList,
+    asGrid: StreamRenderables.postsAsGrid,
+  },
+}
 
 export function getCategories() {
   return {
-    type: ACTION_TYPES.LOAD_STREAM,
-    payload: { endpoint: api.categories() },
-    meta: {
-      mappingType: MAPPING_TYPES.CATEGORIES,
-      renderStream: {
-        asList: StreamRenderables.categoriesAsGrid,
-        asGrid: StreamRenderables.categoriesAsGrid,
-      },
-      resultFilter: StreamFilters.sortedCategories,
-      resultKey: 'all-categories',
+    type: ACTION_TYPES.V3.LOAD_CATEGORIES,
+    payload: {
+      query: allCategoriesQuery,
+      variables: {},
     },
   }
 }
 
-export function getPagePromotionals() {
+export function getNavCategories() {
   return {
-    type: ACTION_TYPES.LOAD_STREAM,
-    payload: { endpoint: api.pagePromotionals() },
-    meta: {
-      mappingType: MAPPING_TYPES.PAGE_PROMOTIONALS,
-      resultKey: '/page_promotionals',
+    type: ACTION_TYPES.V3.LOAD_CATEGORIES,
+    payload: {
+      query: navCategoriesQuery,
+      variables: {},
     },
   }
 }
 
-export function loadCategoryPosts(type) {
+export function loadGlobalPostStream(kind, before) {
   return {
-    type: ACTION_TYPES.LOAD_STREAM,
-    payload: { endpoint: api.categoryPosts(type) },
-    meta: {
-      mappingType: MAPPING_TYPES.POSTS,
-      renderStream: {
-        asList: StreamRenderables.postsAsList,
-        asGrid: StreamRenderables.postsAsGrid,
-      },
+    type: ACTION_TYPES.V3.LOAD_STREAM,
+    payload: {
+      query: globalPostStreamQuery,
+      variables: { kind: KINDS[kind], before },
     },
+    meta: postStreamMeta,
   }
 }
 
-export function loadDiscoverPosts(type) {
+export function loadSubscribedPostStream(kind, before) {
   return {
-    type: ACTION_TYPES.LOAD_STREAM,
-    payload: { endpoint: api.discoverPosts(type) },
+    type: ACTION_TYPES.V3.LOAD_STREAM,
+    payload: {
+      query: subscribedPostStreamQuery,
+      variables: { kind: KINDS[kind], before },
+    },
     meta: {
-      mappingType: MAPPING_TYPES.POSTS,
       renderStream: {
         asList: StreamRenderables.postsAsList,
         asGrid: StreamRenderables.postsAsGrid,
+        asZero: <ZeroSubscribedStream />,
       },
     },
   }
 }
 
-export function loadCommunities() {
+export function loadCategoryPostStream(slug, kind, before) {
   return {
-    type: ACTION_TYPES.LOAD_STREAM,
-    payload: { endpoint: api.communitiesPath() },
-    meta: {
-      mappingType: MAPPING_TYPES.USERS,
-      renderStream: {
-        asList: StreamRenderables.usersAsGrid,
-        asGrid: StreamRenderables.usersAsGrid,
-      },
+    type: ACTION_TYPES.V3.LOAD_STREAM,
+    payload: {
+      query: categoryPostStreamQuery,
+      variables: { kind: KINDS[kind], slug, before },
     },
-  }
-}
-
-export function loadFeaturedUsers() {
-  return {
-    type: ACTION_TYPES.LOAD_STREAM,
-    payload: { endpoint: api.awesomePeoplePath() },
-    meta: {
-      mappingType: MAPPING_TYPES.USERS,
-      renderStream: {
-        asList: StreamRenderables.usersAsGrid,
-        asGrid: StreamRenderables.usersAsGrid,
-      },
-    },
+    meta: postStreamMeta,
   }
 }
 

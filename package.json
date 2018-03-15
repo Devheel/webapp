@@ -106,7 +106,7 @@
     "isomorphic-fetch": "2.2.1",
     "jwt-decode": "2.2.0",
     "lodash": "4.17.4",
-    "moment": "2.18.1",
+    "moment": "2.21.0",
     "mousetrap": "1.6.1",
     "postcss": "6.0.8",
     "postcss-apply": "0.8.0",

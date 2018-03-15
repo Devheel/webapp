@@ -8,21 +8,22 @@ import { DismissButton } from '../../components/buttons/Buttons'
 class RegistrationRequestDialog extends PureComponent {
 
   static propTypes = {
-    promotional: PropTypes.object.isRequired,
+    pageHeader: PropTypes.object.isRequired,
+    user: PropTypes.object.isRequired,
   }
 
   render() {
-    const { promotional } = this.props
+    const { pageHeader, user } = this.props
     return (
       <div className="AuthenticationFormDialog inModal">
         <BackgroundImage
           className="hasOverlay6"
-          dpi={'xhdpi'}
+          dpi={'hdpi'}
           isBackground
-          sources={promotional.get('coverImage')}
+          sources={pageHeader.get('image')}
         />
         <RegistrationRequestForm inModal />
-        <HeroPromotionCredits sources={promotional.get('avatar')} label="Posted by" username={promotional.get('username')} />
+        <HeroPromotionCredits sources={user.get('avatar')} label="Posted by" username={user.get('username')} />
         <DismissButton />
       </div>
     )

@@ -5,6 +5,7 @@ import * as api from '../networking/api'
 import * as StreamRenderables from '../components/streams/StreamRenderables'
 import * as StreamFilters from '../components/streams/StreamFilters'
 import { ErrorState } from '../components/errors/Errors'
+import userPostStreamQuery from '../queries/userPostStream'
 
 export function flagUser(username, kind) {
   return {
@@ -28,12 +29,14 @@ export function loadUserDetail(username) {
   }
 }
 
-export function loadUserPosts(username, type) {
+export function loadUserPostsV3(username) {
   return {
-    type: ACTION_TYPES.LOAD_STREAM,
-    payload: { endpoint: api.userResources(username, type) },
+    type: ACTION_TYPES.V3.LOAD_STREAM,
+    payload: {
+      query: userPostStreamQuery,
+      variables: { username },
+    },
     meta: {
-      mappingType: MAPPING_TYPES.POSTS,
       renderStream: {
         asList: StreamRenderables.postsAsList,
         asGrid: StreamRenderables.postsAsGrid,

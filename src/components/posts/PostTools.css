@@ -28,7 +28,7 @@
 .PostTool > a,
 .PostTool > button {
   padding-right: 8px;
-  padding-left: 8px;
+  padding-left: 4px;
   color: #aaa;
   transition: color var(--speed) ease;
 }
@@ -283,7 +283,7 @@
   .Posts.asList .PostTool > a,
   .Posts.asList .PostTool > button {
     padding-right: 12px;
-    padding-left: 12px;
+    padding-left: 4px;
   }
 
   .Posts.asList .PostTool.EditTool > button,

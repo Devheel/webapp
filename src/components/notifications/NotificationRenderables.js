@@ -180,7 +180,7 @@ AnnouncementNotification.propTypes = {
   body: PropTypes.string,
   ctaCaption: PropTypes.string,
   ctaHref: PropTypes.string,
-  isStaffPreview: PropTypes.boolean,
+  isStaffPreview: PropTypes.bool,
   src: PropTypes.string,
   title: PropTypes.string,
 }

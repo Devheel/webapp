@@ -2,14 +2,15 @@
 import 'isomorphic-fetch'
 import { push } from 'react-router-redux'
 import { call, put, select, take } from 'redux-saga/effects'
-import { refreshAuthenticationToken } from '../actions/authentication'
-import { AUTHENTICATION } from '../constants/action_types'
-import { webappToken } from '../networking/api'
 import {
-  selectAccessToken,
-  selectRefreshToken,
-  selectShouldUseAccessToken,
-  selectShouldUseRefreshToken,
+  refreshAuthenticationToken,
+  fetchPublicToken,
+} from '../actions/authentication'
+import { AUTHENTICATION } from '../constants/action_types'
+import {
+  selectUnexpiredAccessToken,
+  selectValidRefreshToken,
+  selectUnexpiredPublicToken,
 } from '../selectors/authentication'
 
 export function getHeaders(accessToken) {
@@ -27,42 +28,49 @@ export function getHeadHeader(accessToken, lastCheck) {
   }
 }
 
-export function* fetchCredentials() {
-  const accessToken = yield select(selectAccessToken)
-  if (yield select(selectShouldUseAccessToken)) {
-    return yield {
-      token: {
-        access_token: accessToken,
-      },
-    }
-  } else if (yield select(selectShouldUseRefreshToken)) {
-    const refreshToken = yield select(selectRefreshToken)
-    yield put(refreshAuthenticationToken(refreshToken))
-    // Wait for the refresh to resolve
-    const result = yield take([AUTHENTICATION.REFRESH_SUCCESS, AUTHENTICATION.REFRESH_FAILURE])
-    if (result.type === AUTHENTICATION.REFRESH_SUCCESS) {
-      // If successful, call fetchCredentials again to setup access_token.
-      return yield call(fetchCredentials)
-    } else if (result.type === AUTHENTICATION.REFRESH_FAILURE) {
-      return yield put(push('/enter'))
-    }
+function* useRefreshToken(refreshToken) {
+  yield put(refreshAuthenticationToken(refreshToken))
+  // Wait for the refresh to resolve
+  const result = yield take([AUTHENTICATION.REFRESH_SUCCESS, AUTHENTICATION.REFRESH_FAILURE])
+  if (result.type === AUTHENTICATION.REFRESH_FAILURE) {
+    return yield put(push('/enter'))
   }
-  return yield call(getClientCredentials)
+  // If successful, call fetchCredentials again to setup access_token.
+  return yield call(fetchCredentials)
 }
 
-export function* getClientCredentials() {
-  const tokenPath = webappToken().path
+function* getPublicToken() {
+  yield put(fetchPublicToken())
+  // Wait for the token to be fetched
+  yield take([AUTHENTICATION.PUBLIC_SUCCESS, AUTHENTICATION.PUBLIC_FAILURE])
+  // If successful, call fetchCredentials again to setup access_token.
+  // If not successful, call fetchCredentials again and hope for the best.
+  return yield call(fetchCredentials)
+}
 
-  try {
-    const response = yield call(fetch, tokenPath, { credentials: 'same-origin' })
-    if (response.ok) {
-      // Pass response as binding for response.json
-      return yield call([response, response.json])
-    }
-    return response
-  } catch (_err) {
-    return yield call(fetchCredentials)
+// We have 5 possible credential states:
+// 1. Unexpired access token
+// 2. Expired access token, refresh success
+// 3. Expired access token, refresh fail
+// 4. Unexpired public token
+// 5. No token, get and store public token
+export function* fetchCredentials() {
+  const accessToken = yield select(selectUnexpiredAccessToken)
+  if (accessToken) {
+    return yield { token: { access_token: accessToken } }
   }
+
+  const refreshToken = yield select(selectValidRefreshToken)
+  if (refreshToken) {
+    return yield call(useRefreshToken, refreshToken)
+  }
+
+  const publicToken = yield select(selectUnexpiredPublicToken)
+  if (publicToken) {
+    return yield { token: { access_token: publicToken } }
+  }
+
+  return yield call(getPublicToken)
 }
 
 function checkStatus(response) {

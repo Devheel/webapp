@@ -13,6 +13,7 @@ import { findModel } from '../helpers/json_helper'
 import commentMethods from './comments'
 import postMethods from './posts'
 import relationshipMethods from './relationships'
+import v3Reducer from './v3_reducer'
 
 // adding methods and accessing them from this object
 // allows the unit tests to stub methods in this module
@@ -81,12 +82,33 @@ methods.removePageId = (state, pageName, id) => {
   return state
 }
 
-function normalizeModel(type, model) {
-  if (type !== MAPPING_TYPES.POSTS) { return model }
+function normalizePostContentRegion(model, field, state) {
+  return model.get(field, Immutable.List()).map((region, index) => {
+    const id = `${model.get('id')}-${index}`
+    const assetId = region.getIn(['links', 'assets'])
+    if (region.get('kind') === 'image' && assetId) {
+      const asset = state.getIn(['assets', assetId])
+      if (asset) {
+        return region.merge({ id, asset })
+      }
+    }
+    return region.merge({ id })
+  })
+}
 
-  const content = model.get('content', Immutable.List()).map((region, index) =>
-    region.set('id', `${model.get('id')}-${index}`))
-  return model.set('content', content)
+function normalizeModel(type, model, state) {
+  if (type === MAPPING_TYPES.POSTS) {
+    return model.merge({
+      content: normalizePostContentRegion(model, 'content', state),
+      summary: normalizePostContentRegion(model, 'summary', state),
+      repostContent: normalizePostContentRegion(model, 'repostContent', state),
+    })
+  } else if (type === MAPPING_TYPES.COMMENTS) {
+    return model.merge({
+      content: normalizePostContentRegion(model, 'content', state),
+    })
+  }
+  return model
 }
 
 methods.mergeModel = (state, type, params) => {
@@ -97,7 +119,7 @@ methods.mergeModel = (state, type, params) => {
   params.id = `${params.id}`
   return state.setIn(
     [type, params.id],
-    normalizeModel(type, state.getIn([type, params.id], Immutable.Map()).mergeDeep(params)),
+    normalizeModel(type, state.getIn([type, params.id], Immutable.Map()).mergeDeep(params), state),
   )
 }
 
@@ -336,6 +358,11 @@ methods.markAnnouncementRead = state =>
 export default function json(state = initialState, action = { type: '' }) {
   // whitelist actions
   switch (action.type) {
+    case ACTION_TYPES.V3.LOAD_STREAM_SUCCESS:
+    case ACTION_TYPES.V3.LOAD_NEXT_CONTENT_SUCCESS:
+    case ACTION_TYPES.V3.LOAD_CATEGORIES_SUCCESS:
+    case ACTION_TYPES.V3.LOAD_PAGE_HEADERS_SUCCESS:
+      return v3Reducer(state, action)
     case ACTION_TYPES.ADD_NEW_IDS_TO_RESULT:
       return methods.addNewIdsToResult(state, action)
     case ACTION_TYPES.AUTHENTICATION.LOGOUT_SUCCESS:

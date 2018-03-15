@@ -4,7 +4,7 @@ import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 import { createSelector } from 'reselect'
 import {
-  loadUserDetail, loadUserLoves, loadUserPosts, loadUserUsers, loadUserFollowing,
+  loadUserDetail, loadUserLoves, loadUserPostsV3, loadUserUsers, loadUserFollowing,
 } from '../actions/user'
 import { sayHello } from '../actions/zeros'
 import { ErrorState4xx } from '../components/errors/Errors'
@@ -34,7 +34,7 @@ export function getStreamAction({ type = 'posts', username }) {
       return loadUserLoves(`~${username}`, type)
     case 'posts':
     default:
-      return loadUserPosts(`~${username}`, type)
+      return loadUserPostsV3(`~${username}`, type)
   }
 }
 

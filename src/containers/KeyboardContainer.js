@@ -68,7 +68,7 @@ class KeyboardContainer extends Component {
       Mousetrap.bind(Object.keys(shortcuts), (event, shortcut) => {
         if (shortcut === SHORTCUT_KEYS.DISCOVER) {
           const { discoverKeyType } = this.props
-          const location = discoverKeyType ? `/discover/${discoverKeyType}` : '/discover'
+          const location = discoverKeyType || '/discover'
           dispatch(push(location))
         } else {
           dispatch(push(shortcuts[shortcut]))

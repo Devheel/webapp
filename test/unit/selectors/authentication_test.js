@@ -4,8 +4,8 @@ import {
   selectExpirationDate,
   selectIsLoggedIn,
   selectRefreshToken,
-  selectShouldUseAccessToken,
-  selectShouldUseRefreshToken,
+  selectUnexpiredAccessToken,
+  selectValidRefreshToken,
 } from '../../../src/selectors/authentication'
 import { stubAuthenticationStore } from '../../support/stubs'
 
@@ -43,31 +43,31 @@ describe('authentication selectors', () => {
     })
   })
 
-  context('#selectShouldUseAccessToken', () => {
+  context('#selectUnexpiredAccessToken', () => {
     const n = new Date()
     const twentyfour = (24 * 60 * 60 * 1000)
     const future = new Date(n.getTime() + twentyfour)
     const past = new Date(n.getTime() - twentyfour)
     it('returns whether to use the access token or not', () => {
       state = { authentication: state.authentication.set('expirationDate', future).set('change', false) }
-      expect(selectShouldUseAccessToken(state)).to.equal(true)
+      expect(selectUnexpiredAccessToken(state)).to.equal('authenticationAccessToken')
 
       state = { authentication: state.authentication.set('expirationDate', past).set('change', true) }
-      expect(selectShouldUseAccessToken(state)).to.equal(false)
+      expect(selectUnexpiredAccessToken(state)).to.equal(null)
     })
   })
 
-  context('#selectShouldUseRefreshToken', () => {
+  context('#selectValidRefreshToken', () => {
     const n = new Date()
     const twentyfour = (24 * 60 * 60 * 1000)
     const future = new Date(n.getTime() + twentyfour)
     const past = new Date(n.getTime() - twentyfour)
     it('returns whether to use the refreshToken or not', () => {
       state = { authentication: state.authentication.set('expirationDate', future).set('change', false) }
-      expect(selectShouldUseRefreshToken(state)).to.equal(false)
+      expect(selectValidRefreshToken(state)).to.equal(null)
 
       state = { authentication: state.authentication.set('expirationDate', past).set('change', true) }
-      expect(selectShouldUseRefreshToken(state)).to.equal(true)
+      expect(selectValidRefreshToken(state)).to.equal('authenticationRefreshToken')
     })
   })
 })

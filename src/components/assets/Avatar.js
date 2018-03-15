@@ -4,6 +4,7 @@ import { Link } from 'react-router'
 import classNames from 'classnames'
 import { getSource } from './BackgroundImage'
 import ImageAsset from './ImageAsset'
+import VideoAsset from './VideoAsset'
 import { before, css, media, modifier, parent, select } from '../../styles/jss'
 import * as s from '../../styles/jso'
 
@@ -56,9 +57,11 @@ const baseStyle = css(
   parent('.OnboardingAvatarPicker ', s.absolute, { top: 0, right: 0, left: 0 }, s.zIndex1, s.my0, s.mxAuto),
   parent('.SettingsAvatarPicker ', s.absolute, { top: 0, right: 0, left: 0 }, s.zIndex1),
   parent('.PostHeader ', s.absolute, { top: 15, left: 0 }),
+  parent('.PostDetail .PostDetailHeader ', s.relative, { top: 'auto', left: 'auto' }),
   parent('.CategoryHeader ', s.absolute, { top: 15, left: 0 }),
   parent('.ArtistInviteSubmissionHeader ', s.absolute, { top: 15, left: 0 }),
   parent('.RepostHeader ', s.absolute, { top: 15, left: 0 }),
+  parent('.PostDetail .RepostDetailHeader ', s.relative, { top: 'auto', left: 'auto' }),
   parent('.RepostHeader.inUserDetail ', { left: 25 }),
   parent('.UserInviteeHeader ', { marginTop: -1 }),
   media(
@@ -91,6 +94,15 @@ const imageStyle = css(
   parent('.isRequesting > ', s.opacity0),
   parent('.PostHeader .isPending > ', s.opacity1),
   parent('.PostHeader .isRequesting > ', s.opacity1),
+)
+
+const videoStyle = css(
+  s.absolute,
+  s.flood,
+  s.fullWidth,
+  s.fullHeight,
+  { borderRadius: '50%', transition: 'opacity 0.4s', objectFit: 'cover' },
+  modifier('[src=""]', s.displayNone),
 )
 
 export default class Avatar extends PureComponent {
@@ -150,12 +162,39 @@ export default class Avatar extends PureComponent {
       'data-username': username,
       draggable: (username && username.length > 1) || (priority && priority.length),
     }
+    const src = getSource({ ...this.props, dpi: this.props.size })
+    const isVideo = !!src && src.substr(-3) === 'mp4'
     const imageProps = {
       alt: alt || username,
       className: `${imageStyle}`,
-      src: getSource({ ...this.props, dpi: this.props.size }),
+      src,
       onLoadFailure: this.onLoadFailure,
       onLoadSuccess: this.onLoadSuccess,
+    }
+    const videoProps = {
+      src,
+      className: `${videoStyle}`,
+    }
+
+    if (isVideo) {
+      if (to) {
+        return (
+          <Link {...wrapperProps} to={to} >
+            <VideoAsset {...videoProps} />
+          </Link>
+        )
+      } else if (onClick) {
+        return (
+          <button {...wrapperProps} onClick={onClick} >
+            <VideoAsset {...videoProps} />
+          </button>
+        )
+      }
+      return (
+        <span {...wrapperProps} >
+          <VideoAsset {...videoProps} />
+        </span>
+      )
     }
 
     if (to) {
