@@ -63,13 +63,12 @@ const categoryTabStyle = css(
   select('& .featured-badge',
     s.absolute,
     s.zIndex2,
-    { top: 5, right: -10 },
-
+    { top: 2, right: -7 },
+    select('& .BadgeFeaturedIcon',
+      { transform: 'scale(0.64)' },
+    ),
     media(s.maxBreak2,
       { top: -2, right: -12 },
-      select('& .BadgeFeaturedIcon',
-        { transform: 'scale(0.64)' },
-      ),
     ),
   ),
 
